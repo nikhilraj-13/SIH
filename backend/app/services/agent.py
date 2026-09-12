@@ -148,30 +148,46 @@ Translate all the string values in the provided JSON object from English to the 
 Keep the JSON keys exactly the same. Only translate the values.
 Output ONLY valid JSON without any markdown formatting or explanations."""
     
-    try:
-        response = client.chat.completions.create(
-            model="openai/gpt-oss-120b",
-            messages=[
-                {"role": "system", "content": prompt},
-                {"role": "user", "content": json.dumps(data)}
-            ],
-            temperature=0.1,
-            max_tokens=4000,
-            response_format={"type": "json_object"}
-        )
+    translated_data = {}
+    chunk_size = 20
+    keys = list(data.keys())
+    
+    for i in range(0, len(keys), chunk_size):
+        chunk_keys = keys[i:i+chunk_size]
+        chunk_data = {k: data[k] for k in chunk_keys}
         
-        output_text = response.choices[0].message.content.strip()
-        translated_data = json.loads(output_text)
-        
-        # Ensure all keys from original data are present in translated data (fallback)
-        for k, v in data.items():
-            if k not in translated_data:
-                translated_data[k] = v
+        try:
+            response = client.chat.completions.create(
+                model="openai/gpt-oss-120b",
+                messages=[
+                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": json.dumps(chunk_data)}
+                ],
+                temperature=0.1,
+                max_tokens=4000,
+            )
+            
+            output_text = response.choices[0].message.content.strip()
+            
+            # Clean up in case it wraps in markdown blocks
+            if output_text.startswith("```json"):
+                output_text = output_text[7:]
+            if output_text.startswith("```"):
+                output_text = output_text[3:]
+            if output_text.endswith("```"):
+                output_text = output_text[:-3]
                 
-        return translated_data
-    except Exception as e:
-        print("Error during batch translation:", e)
-        return data
+            chunk_translated = json.loads(output_text.strip())
+            
+            for k in chunk_keys:
+                translated_data[k] = chunk_translated.get(k, chunk_data[k])
+                
+        except Exception as e:
+            print(f"Error during chunk translation: {e}")
+            for k in chunk_keys:
+                translated_data[k] = chunk_data[k]
+                
+    return translated_data
 
 def generate_voice_prompt(field_name: str, language: str) -> str:
     if language == "en":

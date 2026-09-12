@@ -16,7 +16,7 @@ export default function Login({ onLoginSuccess }) {
     }
     
     try {
-      const res = await fetch('http://localhost:8000/api/v1/auth/request-otp', {
+      const res = await fetch('http://127.0.0.1:8000/api/v1/auth/request-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone })
@@ -37,7 +37,7 @@ export default function Login({ onLoginSuccess }) {
     e.preventDefault();
     setError('');
     try {
-      const res = await fetch('http://localhost:8000/api/v1/auth/verify-otp', {
+      const res = await fetch('http://127.0.0.1:8000/api/v1/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone, otp })
@@ -111,3 +111,4 @@ export default function Login({ onLoginSuccess }) {
     </div>
   );
 }
+

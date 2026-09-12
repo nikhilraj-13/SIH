@@ -47,7 +47,7 @@ export default function BeneficiaryDashboard({
 
   useEffect(() => {
     if (currentTab === 'centers' && profile?.district) {
-      fetch(`http://localhost:8000/api/v1/training-centers/stats?district=${encodeURIComponent(profile.district)}`)
+      fetch(`http://127.0.0.1:8000/api/v1/training-centers/stats?district=${encodeURIComponent(profile.district)}`)
         .then(res => res.json())
         .then(data => {
           if (data.status === 'success') {
@@ -81,7 +81,7 @@ export default function BeneficiaryDashboard({
 
   const fetchRecommendations = useCallback(async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/recommendations?profile_json=${encodeURIComponent(JSON.stringify(profile))}`);
+      const res = await fetch(`http://127.0.0.1:8000/api/v1/recommendations?profile_json=${encodeURIComponent(JSON.stringify(profile))}`);
       if (res.ok) {
         const data = await res.json();
         if (data && data.length > 0) {
@@ -817,3 +817,4 @@ export default function BeneficiaryDashboard({
     </div>
   );
 }
+

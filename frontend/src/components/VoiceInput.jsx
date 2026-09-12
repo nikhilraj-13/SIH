@@ -19,7 +19,7 @@ export default function VoiceInput({ label, value, onChangeText, fieldName, plac
     e.preventDefault();
     setIsProcessing(true);
     try {
-      const res = await fetch('http://localhost:8000/api/v1/voice/synthesize', {
+      const res = await fetch('http://127.0.0.1:8000/api/v1/voice/synthesize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: label, language })
@@ -65,7 +65,7 @@ export default function VoiceInput({ label, value, onChangeText, fieldName, plac
         formData.append('language', language);
 
         try {
-          const res = await fetch('http://localhost:8000/api/v1/voice/transcribe-field', {
+          const res = await fetch('http://127.0.0.1:8000/api/v1/voice/transcribe-field', {
             method: 'POST',
             body: formData,
           });
@@ -173,3 +173,4 @@ export default function VoiceInput({ label, value, onChangeText, fieldName, plac
     </div>
   );
 }
+

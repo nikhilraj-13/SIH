@@ -41,7 +41,7 @@ export default function Registration({ phone, onRegistrationSuccess }) {
   const resolvePincode = useCallback(async (pin) => {
     if (!pin || pin.length !== 6) return;
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/location/resolve-pincode?pincode=${pin}`);
+      const res = await fetch(`http://127.0.0.1:8000/api/v1/location/resolve-pincode?pincode=${pin}`);
       const data = await res.json();
       if (data.status === 'success' && data.district) {
         updateForm('district', data.district);
@@ -59,16 +59,11 @@ export default function Registration({ phone, onRegistrationSuccess }) {
 
   const handleGetLocation = (e) => {
     e.preventDefault();
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser");
-      return;
-    }
-    
     setLocationLoading(true);
-    navigator.geolocation.getCurrentPosition(async (position) => {
+
+    const fetchLocationData = async (latitude, longitude) => {
       try {
-        const { latitude, longitude } = position.coords;
-        const res = await fetch(`http://localhost:8000/api/v1/location/reverse-geocode?lat=${latitude}&lon=${longitude}`);
+        const res = await fetch(`http://127.0.0.1:8000/api/v1/location/reverse-geocode?lat=${latitude}&lon=${longitude}`);
         const data = await res.json();
         if (data.status === 'success' && data.pincode) {
           updateForm('pincode', data.pincode);
@@ -77,20 +72,36 @@ export default function Registration({ phone, onRegistrationSuccess }) {
         }
       } catch (error) {
         console.error("Location error:", error);
+        alert("Failed to fetch location data.");
       } finally {
         setLocationLoading(false);
       }
-    }, (err) => {
-      alert("Unable to retrieve your location (Timed out or denied). Please enter PIN manually.");
-      setLocationLoading(false);
-    }, { timeout: 7000, enableHighAccuracy: false, maximumAge: 60000 });
+    };
+
+    if (!navigator.geolocation) {
+      console.warn("Geolocation is not supported by your browser. Using fallback location.");
+      fetchLocationData(23.0225, 72.5714); // Fallback to Ahmedabad
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        fetchLocationData(position.coords.latitude, position.coords.longitude);
+      },
+      (err) => {
+        console.warn("Unable to retrieve location (Timed out or denied). Using fallback location (Ahmedabad).");
+        // Fallback to Ahmedabad for demo purposes
+        fetchLocationData(23.0225, 72.5714); 
+      }, 
+      { timeout: 7000, enableHighAccuracy: false, maximumAge: 60000 }
+    );
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/api/v1/register', {
+      const res = await fetch('http://127.0.0.1:8000/api/v1/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, phone })
@@ -198,3 +209,4 @@ export default function Registration({ phone, onRegistrationSuccess }) {
     </div>
   );
 }
+

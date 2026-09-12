@@ -30,8 +30,11 @@ class BhashiniConnector:
     def synthesize_text(self, text: str, language: str) -> str:
         # MOCK IMPLEMENTATION
         # In a real scenario, we would call TTS endpoint and get base64 audio back
-        print(f"Mock TTS: Synthesizing text in {language}: {text}")
-        
+        try:
+            print(f"Mock TTS: Synthesizing text in {language}: {text}")
+        except UnicodeEncodeError:
+            print(f"Mock TTS: Synthesizing text in {language}: [Unicode Text]")
+
         # Return a dummy base64 string representing an empty WAV
         dummy_wav = b"RIFF$\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00\x80>\x00\x00\x00}\x00\x00\x02\x00\x10\x00data\x00\x00\x00\x00"
         return base64.b64encode(dummy_wav).decode("utf-8")

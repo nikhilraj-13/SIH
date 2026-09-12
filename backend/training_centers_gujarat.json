@@ -1,0 +1,31 @@
+{
+  "Data": {
+    "District": [
+      {
+        "District": "Ahmedabad",
+        "Count": 15,
+        "Centers": ["Ahmedabad PMKK Hub", "Ashram Road Skill Center", "Navrangpura MSME Hub"]
+      },
+      {
+        "District": "Surat",
+        "Count": 10,
+        "Centers": ["Surat Diamond Skill Hub", "Varachha Training Center", "Udhna PM-AJAY Center"]
+      },
+      {
+        "District": "Vadodara",
+        "Count": 8,
+        "Centers": ["Vadodara Skill Hub", "Sayajigunj PMKK"]
+      },
+      {
+        "District": "Rajkot",
+        "Count": 5,
+        "Centers": ["Rajkot PM-AJAY Hub", "Race Course Skill Center"]
+      },
+      {
+        "District": "Gandhinagar",
+        "Count": 4,
+        "Centers": ["Gandhinagar IT Skill Hub", "Sector 11 Training Center"]
+      }
+    ]
+  }
+}

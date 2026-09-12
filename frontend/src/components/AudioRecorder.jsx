@@ -95,61 +95,7 @@ export default function AudioRecorder({ onProfileUpdate, activeLanguage = 'hi', 
     }
   }, []);
 
-  // Graceful client fallback for demo robustness
-  const handleClientSideFallback = useCallback((blob, textFallback) => {
-    if (!textFallback && blob) {
-      setStatusMsg('Could not transcribe audio. Backend error.');
-      setStatusType('error');
-      setIsLoading(false);
-      setTimeout(() => setStatusMsg(''), 3000);
-      return;
-    }
-    const inputStr = textFallback || "";
-    const lower = inputStr.toLowerCase();
-    
-    let updated = { ...currentProfile };
-    if (lower.includes('10th') || lower.includes('10वीं')) updated.education_level = '10th Grade';
-    else if (lower.includes('12th') || lower.includes('12वीं')) updated.education_level = '12th Pass';
-    else if (lower.includes('8th') || lower.includes('8वीं')) updated.education_level = '8th Pass';
-    else if (lower.includes('5th') || lower.includes('5वीं') || lower.includes('farmer')) updated.education_level = '5th Pass';
-    else if (!updated.education_level) updated.education_level = '10th Grade';
-
-    if (lower.includes('tailor') || lower.includes('सिलाई') || lower.includes('garment')) updated.traditional_trade = 'Tailoring';
-    else if (lower.includes('solar') || lower.includes('सोलर') || lower.includes('electric')) updated.traditional_trade = 'Solar & Electrical';
-    else if (lower.includes('beauty') || lower.includes('पार्लर') || lower.includes('makeup')) updated.traditional_trade = 'Beauty & Wellness';
-    else if (lower.includes('farm') || lower.includes('खेती') || lower.includes('organic')) updated.traditional_trade = 'Organic Farming';
-    else if (!updated.traditional_trade) updated.traditional_trade = 'Tailoring';
-
-    if (lower.includes('self') || lower.includes('स्वरोजगार') || lower.includes('business') || lower.includes('shop')) {
-      updated.preference = 'Self-Employment';
-    } else {
-      updated.preference = 'Wage Employment';
-    }
-
-    if (lower.includes('10 km') || lower.includes('10')) updated.mobility_km = 10;
-    else if (lower.includes('25')) updated.mobility_km = 25;
-    else if (lower.includes('5')) updated.mobility_km = 5;
-    else if (!updated.mobility_km) updated.mobility_km = 10;
-
-    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    let botReply = "Thank you! I have updated your education and skill trade. You can see your matched NSQF skill packs and PM-AJAY stipend on the dashboard.";
-    if (activeLanguage === 'hi') {
-      botReply = "धन्यवाद! मैंने आपकी शिक्षा और हुनर की जानकारी अपडेट कर दी है। आप दाईं ओर उपयुक्त NSQF ट्रेनिंग और PM-AJAY वजीफा देख सकते हैं।";
-    }
-
-    setMessages(prev => [
-      ...prev,
-      { id: `user_${Date.now()}`, sender: 'user', text: inputStr, timestamp: now },
-      { id: `bot_${Date.now() + 1}`, sender: 'bot', text: botReply, timestamp: now, audioBase64: null }
-    ]);
-
-    if (onProfileUpdate) {
-      onProfileUpdate(updated);
-    }
-    setStatusMsg('Profile successfully updated.');
-    setStatusType('success');
-    setTimeout(() => setStatusMsg(''), 3000);
-  }, [activeLanguage, currentProfile, onProfileUpdate]);
+  // Removed handleClientSideFallback to ensure we don't return hardcoded mock responses
 
   const uploadAudioBlob = useCallback(async (blob, textFallback = null) => {
     setIsLoading(true);
@@ -167,7 +113,7 @@ export default function AudioRecorder({ onProfileUpdate, activeLanguage = 'hi', 
     formData.append('current_profile_json', JSON.stringify(currentProfile));
 
     try {
-      const res = await fetch('http://localhost:8000/api/v1/voice/chat', {
+      const res = await fetch('http://127.0.0.1:8000/api/v1/voice/chat', {
         method: 'POST',
         body: formData,
       });
@@ -228,12 +174,14 @@ export default function AudioRecorder({ onProfileUpdate, activeLanguage = 'hi', 
       setTimeout(() => setStatusMsg(''), 2500);
       return data;
     } catch (err) {
-      console.warn('Backend API request failed, applying mock conversational fallback:', err);
-      handleClientSideFallback(blob, textFallback);
+      console.error('Backend API request failed:', err);
+      setStatusMsg('Connection failed. Please ensure the backend is running.');
+      setStatusType('error');
+      setTimeout(() => setStatusMsg(''), 5000);
     } finally {
       setIsLoading(false);
     }
-  }, [activeLanguage, currentProfile, handleClientSideFallback, onProfileUpdate, playAudioBase64]);
+  }, [activeLanguage, currentProfile, onProfileUpdate, playAudioBase64]);
 
   const handleOnline = useCallback(() => {
     setStatusMsg('Back online. Syncing queued audio...');
@@ -538,3 +486,4 @@ export default function AudioRecorder({ onProfileUpdate, activeLanguage = 'hi', 
     </div>
   );
 }
+

@@ -6,6 +6,7 @@ import BeneficiaryDashboard from './components/BeneficiaryDashboard';
 import BeneficiaryReportModal from './components/BeneficiaryReportModal';
 import Registration from './components/Registration';
 import Login from './components/Login';
+import FloatingChatBot from './components/FloatingChatBot';
 import { 
   Mic, 
   LayoutDashboard, 
@@ -33,8 +34,8 @@ function MainApp({ selectedLang, onSelectLang }) {
 
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showReportModal, setShowReportModal] = useState(false);
-  const [activeSection, setActiveSection] = useState('home');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [activeSection, setActiveSection] = useState('registration');
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   const handleLoginSuccess = (phone, isNewUser, dbProfile) => {
     if (dbProfile) {
@@ -404,6 +405,11 @@ function MainApp({ selectedLang, onSelectLang }) {
           profile={profile}
           onClose={() => setShowReportModal(false)}
         />
+      )}
+
+      {/* Floating Chat Bot */}
+      {activeSection !== 'registration' && activeSection !== 'assistant' && (
+        <FloatingChatBot onOpenChat={() => setActiveSection('assistant')} />
       )}
     </div>
   );

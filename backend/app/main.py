@@ -226,9 +226,14 @@ async def resolve_pincode(pincode: str):
 @app.get("/api/v1/location/reverse-geocode")
 async def reverse_geocode(lat: str, lon: str):
     try:
-        url = f"https://api.bigdatacloud.net/data/reverse-geocode-client?latitude={lat}&longitude={lon}&localityLanguage=en"
-        res = requests.get(url, timeout=3).json()
-        return {"status": "success", "pincode": res.get("postcode", "")}
+        url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}"
+        headers = {"User-Agent": "SIH-App"}
+        res = requests.get(url, headers=headers, timeout=5).json()
+        postcode = res.get("address", {}).get("postcode", "")
+        if postcode:
+            return {"status": "success", "pincode": postcode}
+        else:
+            return {"status": "error", "message": "Postcode not found"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
@@ -318,6 +323,22 @@ async def get_recommendations(profile_json: str):
 
     results = query_recommendations(query_str, n_results=2)
     
+    # Fetch local centers based on district
+    user_district = profile_data.get("district", "Ahmedabad")
+    local_centers_list = ["PM-AJAY Default Center A", "Local MSME Hub"]
+    try:
+        json_path = os.path.join(os.path.dirname(__file__), "..", "training_centers_gujarat.json")
+        if os.path.exists(json_path):
+            with open(json_path, "r", encoding="utf-8") as f:
+                tc_data = json.load(f)
+            districts = tc_data.get("Data", {}).get("District", [])
+            for d in districts:
+                if d.get("District", "").lower() == user_district.lower() and "Centers" in d:
+                    local_centers_list = d["Centers"]
+                    break
+    except Exception as e:
+        print(f"Error loading training centers: {e}")
+    
     recs = []
     if results and results['metadatas'] and len(results['metadatas'][0]) > 0:
         for meta in results['metadatas'][0]:
@@ -325,6 +346,6 @@ async def get_recommendations(profile_json: str):
                 nsqf_pack_name=meta["name"],
                 level=meta["level"],
                 skill_gap_analysis="Training required based on current profile.",
-                local_centers=["PM-AJAY Center A", "Local MSME Hub"]
+                local_centers=local_centers_list
             ))
     return recs
